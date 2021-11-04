@@ -23,12 +23,9 @@ horas = [n for n in range (8, 19)]
 dias = [n for n in range (1, 8)]
 
 # 4) Comunas de Santiago
-comunas_santiago = ["Santiago", "Conchali", "Huechuraba", "Independencia", "Quilicura", "Recoleta",
-    "Renca", "Las Condes", "Lo Barnechea", "Providencia", "Vitacura", "La Reina", "Macul", "Nunoa",
-    "Penalolen", "La Florida", "La Granja", "El Bosque", "La Cisterna", "La Pintana", "San Ramon",
-    "Lo Espejo", "Pedro Aguirre Cerda", "San Joaquin", "San Miguel", "Cerrillos", 
-    "Estacion Central", "Maipu", "Cerro Navia", "Lo Prado", "Pudahuel", "Quinta Normal"]
-
+ruta_comunas = os.path.join("Entrega 2", "comunas.json")
+with open(ruta_comunas, "r") as file:
+    comunas = json.load(file)   
 
 # 5) Fiscalizadores contratables
 path_fiscalizadores = os.path.join("Entrega 2", "nombres_fiscalizadores.csv")
@@ -38,7 +35,6 @@ with open(path_fiscalizadores, "r") as archivo:
     for linea in lineas:
         linea = linea.strip().split(",")
         fiscalizadores.append(linea[1])
-
 
 # 6) Operadores de llamadas contratables
 path_operadores = os.path.join("Entrega 2", "nombres_operadores.csv")
@@ -51,6 +47,12 @@ with open(path_operadores, "r") as archivo:
 
 # 7) Implementos sanitarios
 implementos = ["guante", "mascarilla", "pantallas faciales", "alcohol gel"]
+
+# 8) Comunas restringidas
+ruta_comunas_vetadas = os.path.join("Entrega 2", "comunas_vetadas.json")
+with open(ruta_comunas_vetadas, "r") as file:
+    comunas_vetadas = json.load(file)   
+
 
 #### PARÁMETROS ####
 # Calidad
@@ -83,6 +85,7 @@ max_call_h_d = 5
 # Cantidad maxima a adquirir del implemento sanitario a el dia d
 max_a_d = 10
 maxInv_a_d = 100
+
 
 
 #### MODELO ####
