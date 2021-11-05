@@ -138,7 +138,7 @@ iI_ad = model.addVars(implementos, dias, vtype=GRB.INTEGER, name="iI_ad")
 model.update()
 
 
-#### RESTRICCIONES ####
+### RESTRICCIONES ####
 # 1) Un fiscalizador solo puede realizar acciones si es que fue contratado
 model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia, fiscalizador] + PCR_htdf[hogar, hora, dia, fiscalizador]
                   + ANT_htdf[hogar, hora, dia, fiscalizador] for hogar in hogares.keys()) + 
@@ -179,18 +179,16 @@ model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] for hogar in h
                   for dia in [2, 3, 4, 5, 6, 7]), name="flujo")
 
 # 9) Un fiscalizador no puede estar en dos comunas distintas en horas contiguas
-model.addConstrs((quicksum(P_tdfs[hora, dia, fiscalizador, comuna1] + P_tdfs[hora+1, dia, fiscalizador, comuna2]
-                   for dia in dias for hora in [8,9,10,11,12,13,14,15,16,17]) <= 1 for comuna1 in comunas_santiago.keys()  for
-                   comuna2 in comunas_santiago.keys() for fiscalizador in fiscalizadores),name="disponibilidad_fisc")
+model.addConstrs((quicksum(P_tdfs[hora, dia, fiscalizador, comuna1]for comuna1 in comunas_santiago.keys())
+                   + quicksum(P_tdfs[hora+1, dia, fiscalizador, comuna2] for comuna2 in comunas_santiago.keys())<= 1 
+                   for hora in [8,9,10,11,12,13,14,15,16,17] for dia in dias for fiscalizador in fiscalizadores)
+                   ,name="disponibilidad_fisc")
 
 # 10) No puede haber una llamada y una fiscalizacion a la misma hora en una misma casa
 model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] for fiscalizador in fiscalizadores) +
                   quicksum(L_htdo[hogar, hora, dia, operador] for operador in operadores) <= 1
                   for hora in horas for hogar in hogares.keys() for dia in dias), name="redundancia")
 
-# PRUEBA Comuna inicial de los fiscalizadores
-model.addConstrs((P_tdfs[8, dia, fiscalizador, "31"]==1 for fiscalizador in fiscalizadores
-    for dia in dias))
 
 # 11) Un fiscalizador solo puede estar en una comuna a la vez
 model.addConstrs((quicksum(P_tdfs[hora, dia, fiscalizador, comuna] for comuna in comunas_santiago.keys())
@@ -207,24 +205,24 @@ model.addConstrs((V_tdfky[hora, dia, fiscalizador, comuna1, comuna2] == P_tdfs[h
                  for comuna1 in comunas_santiago.keys() for comuna2 in comunas_santiago.keys()), name="fin_viaje_fisc")
 
 # 14) Un fiscalizador solo puede hacer una actividad por hora
-model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] + V_tdfky[hora, dia, fiscalizador, comuna1, comuna2] 
-                  for hora in horas) == 1 for hogar in hogares.keys() for dia in dias 
-                  for fiscalizador in fiscalizadores for comuna1 in comunas_santiago.keys() for comuna2
-                  in comunas_santiago.keys()), name="acc_max_fisc")
+model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] + quicksum(V_tdfky[hora, dia, fiscalizador, comuna1, comuna2] 
+                  for comuna1 in comunas_santiago.keys() for comuna2 in comunas_santiago.keys()) 
+                  for hogar in hogares.keys()) == 1 for hora in horas for dia in dias 
+                  for fiscalizador in fiscalizadores), name="acc_max_fisc")
 
 # 15) Numero maximo de llamadas por hora por operador
 model.addConstrs((quicksum(L_htdo[hogar, hora, dia, operador] for hogar in hogares.keys()) <= 
                   maxc for operador in operadores for dia in dias for hora in horas), name="max_llamadas_ph")
 
 # 16) Restriccion fiscalizacion cada 2 dias maximo
-model.addConstrs((R_htdf[hogar, hora, dia, fiscalizador] + R_htdf[hogar, hora-1, dia, fiscalizador] >= 1 
-                  for hogar in hogares.keys() for hora in [9,10,11,12,13,14,15,16,17,18] for dia in dias
-                  for fiscalizador in fiscalizadores), name="temp_entre_fisc")
+model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] + R_htdf[hogar, hora-1, dia, fiscalizador] 
+                  for fiscalizador in fiscalizadores for hora in [9,10,11,12,13,14,15,16,17,18]) >= 1 
+                  for hogar in hogares.keys() for dia in dias), name="temp_entre_fisc")
 
 # 17) Maximo de visitas por cada vivienda a fiscalizar
-model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] for dia in dias) <= maxv 
-                  for hogar in hogares.keys() for hora in horas 
-                  for fiscalizador in fiscalizadores), name="max_visitas_por_hogar_a_fisc")
+model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] for fiscalizador in fiscalizadores 
+                  for hora in horas) <= maxv for hogar in hogares.keys() for dia in dias),
+                  name="max_visitas_por_hogar_a_fisc")
     
 # 18) Si se hace un test PCR a un hogar h tiene que hacerse una 
         #visita a la misma hora t del dia d por el fiscalizador f
@@ -238,10 +236,11 @@ model.addConstrs((ANT_htdf[hogar, hora, dia, fiscalizador] <= R_htdf[hogar, hora
                   for hogar in hogares.keys() for hora in horas for dia in dias
                   for fiscalizador in fiscalizadores), name="ANT_visita")
 
-# 20) FALTA ESTA
-# model.addConstrs((ANT_htdf[hogar, hora, dia, fiscalizador] <= R_htdf[hogar, hora, dia, fiscalizador]
-#                   for hogar in hogares.keys() for hora in horas for dia in dias
-#                   for fiscalizador in fiscalizadores), name="ANT_visita")
+# 20) Se puede hacer solo una de las siguientes fiscalizaciones por hogar $h$ en cada hora $t$ 
+# en cada día d: Test PCR, test de antígeno, llamada telefónica:
+model.addConstrs((quicksum(PCR_htdf[hogar, hora, dia, fiscalizador] + ANT_htdf[hogar, hora, dia, fiscalizador] 
+                  for fiscalizador in fiscalizadores) + quicksum(L_htdo[hogar, hora, dia, operador] for operador 
+                  in operadores) <= 1 for hogar in hogares.keys() for hora in horas for dia in dias), name="tipo_visita")
 
 # 21) Si se hace un test PCR en el dia x, la casa no debe recibir mas fiscalizaciones desde el dia x+2
 model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia + 2, fiscalizador]
@@ -278,6 +277,8 @@ model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia, fiscalizador]*calf 
                   for operador in operadores) for hora in horas for dia in dias)
                   <= qual for hogar in hogares.keys()), name="qual_fis_llam")
 
+# 25) Comuna inicial de los fiscalizadores
+model.addConstrs((P_tdfs[8, 1, fiscalizador, "31"] == 1 for fiscalizador in fiscalizadores), name="comuna_inicial")
 
 #### FUNCIÓN OBJETIVO ####
 obj = (quicksum(K_f[fiscalizador] * caf_f for fiscalizador in fiscalizadores) +
