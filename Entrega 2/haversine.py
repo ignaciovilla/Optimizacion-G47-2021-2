@@ -4,6 +4,7 @@
 import math
 import os
 import json
+import pickle
 
 def formula_haversine(x_1, y_1, x_2, y_2):
     R = 6373                # radio de la tierra en km
@@ -40,10 +41,11 @@ with open(path_coordenadas, "r") as file:
 
 dict_distancias = {}
 for i in range(0, len(lista_coordenadas)):
-    for a in range (i+1, len(lista_coordenadas)):
-        dict_distancias[(lista_coordenadas[i][0], lista_coordenadas[a][0])] = formula_haversine(
+    for a in range (0, len(lista_coordenadas)):
+        dict_distancias[f"{lista_coordenadas[i][0]}, {lista_coordenadas[a][0]}"] = formula_haversine(
             lista_coordenadas[i][1], lista_coordenadas[i][2], lista_coordenadas[a][1],
             lista_coordenadas[a][2])
+
 
 pesos_por_km = 78.767
 dict_costos_por_desp = {}
