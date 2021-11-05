@@ -44,7 +44,7 @@ lista_cantidad_gente = [1] * 13 + [2] * 17 + [3] * 20 + [4] * 17 + [5] * 10 + [6
 for i in range(0, 10):
     dict_hogares[i] = {"comuna" : random.choice(comunas_santiago), 
         "cant_personas" : random.choice(lista_cantidad_gente)}
-ruta_hogares_json = os.path.join("Entrega 2", "hogares.json")
+ruta_hogares_json = os.path.join("Entrega 2", "hogares_v1.json")
 with open(ruta_hogares_json, "w") as outfile:
     json.dump(dict_hogares, outfile)
 

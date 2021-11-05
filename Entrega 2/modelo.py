@@ -16,6 +16,7 @@ ruta_hogares_json = os.path.join("Entrega 2", "hogares.json")
 with open(ruta_hogares_json, "r") as file:
     hogares = json.load(file)   
     # diccionario de la forma {numero_hogar: {"comuna" : comuna, "cant_personas": numero}}
+print(hogares)
 
 
 # 2) Horas del día
@@ -189,10 +190,9 @@ model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] for fiscalizad
                   quicksum(L_htdo[hogar, hora, dia, operador] for operador in operadores) <= 1
                   for hora in horas for hogar in hogares.keys() for dia in dias), name="redundancia")
 
-
-# 11) Un fiscalizador solo puede estar en una comuna a la vez
+# 11) Un fiscalizador no puede estar en dos comunas a la vez
 model.addConstrs((quicksum(P_tdfs[hora, dia, fiscalizador, comuna] for comuna in comunas_santiago.keys())
-                 == 1 for hora in horas for dia in dias for fiscalizador in fiscalizadores), name="logica_fisc")
+                 <= 1 for hora in horas for dia in dias for fiscalizador in fiscalizadores), name="logica_fisc")
 
 # 12) El fiscalizador puede comenzar el viaje solo si se encuentra en la comuna
 model.addConstrs((V_tdfky[hora, dia, fiscalizador, comuna1, comuna2] == P_tdfs[hora, dia, fiscalizador, comuna1]
@@ -207,8 +207,9 @@ model.addConstrs((V_tdfky[hora, dia, fiscalizador, comuna1, comuna2] == P_tdfs[h
 # 14) Un fiscalizador solo puede hacer una actividad por hora
 model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] + quicksum(V_tdfky[hora, dia, fiscalizador, comuna1, comuna2] 
                   for comuna1 in comunas_santiago.keys() for comuna2 in comunas_santiago.keys()) 
-                  for hogar in hogares.keys()) == 1 for hora in horas for dia in dias 
+                  for hogar in hogares.keys()) <= 1 for hora in horas for dia in dias 
                   for fiscalizador in fiscalizadores), name="acc_max_fisc")
+
 
 # 15) Numero maximo de llamadas por hora por operador
 model.addConstrs((quicksum(L_htdo[hogar, hora, dia, operador] for hogar in hogares.keys()) <= 
@@ -275,10 +276,7 @@ model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia, fiscalizador]*calf 
                   ANT_htdf[hogar, hora, dia, fiscalizador]*calant for fiscalizador in fiscalizadores) + 
                   quicksum(L_htdo[hogar, hora, dia, operador]*call
                   for operador in operadores) for hora in horas for dia in dias)
-                  <= qual for hogar in hogares.keys()), name="qual_fis_llam")
-
-# 25) Comuna inicial de los fiscalizadores
-model.addConstrs((P_tdfs[8, 1, fiscalizador, "31"] == 1 for fiscalizador in fiscalizadores), name="comuna_inicial")
+                  >= qual for hogar in hogares.keys()), name="qual_fis_llam")
 
 #### FUNCIÓN OBJETIVO ####
 obj = (quicksum(K_f[fiscalizador] * caf_f for fiscalizador in fiscalizadores) +
