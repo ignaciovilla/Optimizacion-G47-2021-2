@@ -17,10 +17,11 @@ with open(ruta_hogares_json, "r") as file:
 
 
 # 2) Horas del día
-horas = [n for n in range (8, 19)]
+horas = [n for n in range (8, 19)]  # lista de números del 8 al 18 representando las horas del día disponibles
+                                    # para trabajar
 
 # 3) Días de la semana
-dias = [n for n in range (1, 8)]
+dias = [n for n in range (1, 8)]    # lista de números del 1 al 7 representando los días para fiscalizar
 
 # 4) Comunas de Santiago
 ruta_comunas = os.path.join("Entrega 2", "comunas.json")
@@ -46,7 +47,7 @@ with open(path_operadores, "r") as archivo:
         operadores.append(linea[1])
 
 # 7) Implementos sanitarios
-implementos = ["guante", "mascarilla", "pantallas faciales", "alcohol gel"]
+implementos = ["guantes", "mascarilla", "pantalla facial", "delantal quirurgico" "alcohol gel"]
 
 # 8) Comunas restringidas
 ruta_comunas_vetadas = os.path.join("Entrega 2", "comunas_vetadas.json")
@@ -54,38 +55,55 @@ with open(ruta_comunas_vetadas, "r") as file:
     comunas_vetadas = json.load(file)   
 
 
+
+
 #### PARÁMETROS ####
 # Calidad
 qual = 10
 
 # Valor de calidad de la fiscalización
-quality_f = 1
+calf = 1
 
 # Valor de calidad de la llamada
-quality_l = 5
+call = 5
+
+# Valor de calidad del test PCR
+calpcr = 9
+
+# Valor de calidad del test de antígeno
+calant = 6
 
 # Costo de movilización entre comunas
 ruta_costos_desp_json = os.path.join("Entrega 2", "costos_desplazamientos.json")
 with open(ruta_costos_desp_json, "r") as file:
-    costos_desp = json.load(file)
-
+    costos_desp = json.load(file)       ## este es CM_i,j
 
 # Costo fijo asociado al fiscalizador "f" (sueldo, colación, etc.)
-cost_f = 1000000
+caf_f = 1000000
 
 # Costo fijo asociado al operador "o" (sueldo, colación, etc.)
-cost_o = 1000000
+cof_o = 1000000
 
 # Máximo de llamadas por hora por operador
-max_call_o_h = 5
+maxc = 5
 
-# Máximo de llamadas a una casa por día
-max_call_h_d = 5
+# Máximo de llamadas a una vivienda por día
+maxh = 5
 
-# Cantidad maxima a adquirir del implemento sanitario a el dia d
-max_a_d = 10
-maxInv_a_d = 100
+# Máximo de visitas a una vivienda por día
+maxv = 2
 
+# Costo de comprar el implemento sanitario
+cims = {"guantes": 1, "mascarilla": 1, "pantalla facial": 3, "delantal quirurgico": 1, "alcohol gel": 5}
+
+# Rendimiento específico por visita de cada implemento
+alpha = {"guantes": 1, "mascarilla": 1, "pantalla facial": 3, "delantal quirurgico": 1, "alcohol gel": 5}
+
+# Costo asociado a la compra y uso de test PCR
+beta = 30000
+
+# Costo asociado a la compra y uso de test de antigeno
+gamma = 45000
 
 
 #### MODELO ####
