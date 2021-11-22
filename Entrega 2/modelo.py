@@ -6,9 +6,6 @@ import json
 # Omitimos los tildes y ñ, para evitar posibles errores. Por el mismo motivo, algunas cosas 
 # están escritas en inglés
 
-# Enlas restricciones 8,9,13,16,21,22
-
-
 
 #### CONJUNTOS ####
 # 1) Hogares a fiscalizar
@@ -16,8 +13,6 @@ ruta_hogares_json = os.path.join("Entrega 2", "hogares.json")
 with open(ruta_hogares_json, "r") as file:
     hogares = json.load(file)   
     # diccionario de la forma {numero_hogar: {"comuna" : comuna, "cant_personas": numero}}
-print(hogares)
-
 
 # 2) Horas del día
 horas = [n for n in range (8, 19)]  # lista de números del 8 al 18 representando las horas del día disponibles
@@ -39,7 +34,7 @@ with open(ruta_comunas, "r") as file:
 #     for linea in lineas:
 #         linea = linea.strip().split(",")
 #         fiscalizadores.append(linea[1])
-fiscalizadores = [n for n in range (1, 5)]
+fiscalizadores = [n for n in range (1, 400)]
 
 # 6) Operadores de llamadas contratables
 # path_operadores = os.path.join("Entrega 2", "nombres_operadores.csv")
@@ -49,7 +44,7 @@ fiscalizadores = [n for n in range (1, 5)]
 #     for linea in lineas:
 #         linea = linea.strip().split(",")
 #         operadores.append(linea[1])
-operadores = [n for n in range (1, 3)]
+operadores = [n for n in range (1, 200)]
 
 # 7) Implementos sanitarios
 implementos = ["guantes", "mascarilla", "pantalla_facial", "delantal_quirurgico", "alcohol_gel"]
