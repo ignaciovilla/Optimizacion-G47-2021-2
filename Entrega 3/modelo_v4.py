@@ -82,6 +82,8 @@ for key in costos_desp.keys():
 # Costo fijo asociado al fiscalizador "f" (sueldo, colación, etc.)
 caf_f = 600000
 
+
+variacion_caf = []
 # Costo fijo asociado al operador "o" (sueldo, colación, etc.)
 cof_o = 337000
 
@@ -132,11 +134,18 @@ model.update()
 
 ### RESTRICCIONES ####
 # 1) Un fiscalizador solo puede realizar acciones si es que fue contratado
+# model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia, fiscalizador] + PCR_htdf[hogar, hora, dia, fiscalizador]
+#                   + ANT_htdf[hogar, hora, dia, fiscalizador] for hogar in hogares.keys()) + 
+#                   quicksum(V_tdfky[hora, dia, fiscalizador, comuna1, comuna2]
+#                   for comuna1 in comunas_santiago.keys() for comuna2 in comunas_santiago.keys()) for hora in horas for dia in dias)
+#                   <= M * K_f[fiscalizador] for fiscalizador in fiscalizadores.keys()), name="f_contratado")
+
 model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia, fiscalizador] + PCR_htdf[hogar, hora, dia, fiscalizador]
-                  + ANT_htdf[hogar, hora, dia, fiscalizador] for hogar in hogares.keys()) + 
-                  quicksum(V_tdfky[hora, dia, fiscalizador, comuna1, comuna2]
-                  for comuna1 in comunas_santiago.keys() for comuna2 in comunas_santiago.keys()) for hora in horas for dia in dias)
-                  <= M * K_f[fiscalizador] for fiscalizador in fiscalizadores.keys()), name="f_contratado")
+                + ANT_htdf[hogar, hora, dia, fiscalizador] for hogar in hogares.keys())
+                for hora in horas for dia in dias)
+                <= M * K_f[fiscalizador] for fiscalizador in fiscalizadores.keys()), name="f_contratado")
+
+
 
 # 2) Un operador solo puede llamar si es que fue contradado
 model.addConstrs((quicksum(L_htdo[hogar, hora, dia, operador] for dia in dias for hora in horas 
@@ -223,6 +232,15 @@ model.addConstrs((P_tdfs[hora, dia, fiscalizador, comuna1] + P_tdfs[hora+1, dia,
 #                   for hogar in hogares.keys()) <= 1 for hora in horas for dia in dias 
 #                   for fiscalizador in fiscalizadores.keys()), name="acc_max_fisc")
 
+# model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador]
+#                   for hogar in hogares.keys()) <= 1 for hora in horas for dia in dias 
+#                   for fiscalizador in fiscalizadores.keys()), name="acc_max_fisc")
+
+
+# model.addConstrs((quicksum(V_tdfky[hora, dia, fiscalizador, comuna1, comuna2] 
+#                   for comuna1 in comunas_santiago.keys() for comuna2 in comunas_santiago.keys())
+#                   <= 1 for hora in horas for dia in dias 
+#                   for fiscalizador in fiscalizadores.keys()), name="hola")
 
 # 15) Numero maximo de llamadas por hora por operador
 model.addConstrs((quicksum(L_htdo[hogar, hora, dia, operador] for hogar in hogares.keys()) <= 
@@ -237,7 +255,6 @@ model.addConstrs((quicksum(L_htdo[hogar, hora, dia, operador] for hogar in hogar
 model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] for hora in horas for fiscalizador
                 in fiscalizadores.keys()) == 1 for hogar in hogares.keys() for dia in dias),
                 name="temp_entre_fisc")
-
 
 # 17) Maximo de visitas por cada vivienda a fiscalizar
 model.addConstrs((quicksum(R_htdf[hogar, hora, dia, fiscalizador] for fiscalizador in fiscalizadores.keys() 
@@ -280,13 +297,6 @@ model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia + 1, fiscalizador]
                 <= M * quicksum(ANT_htdf[hogar, hora, dia, fiscalizador]for hora in horas 
                 for fiscalizador in fiscalizadores.keys() for dia in [1, 2, 3, 4, 5, 6]) 
                 for hogar in hogares.keys()), name="veto_ANT")
-                
-# 23) No se puede realizar un viaje desde una comuna "y" a una comuna "k", si es que "y" pertenece a  RES_{k}, 
-#     con $RES_{k}=comunas restringidas de "k"
-# model.addConstrs((quicksum(V_tdfky[hora, dia, fiscalizador, comuna1, str(comuna2)] 
-#                 for comuna2 in comunas_vetadas[comuna1]) == 0 
-#                 for hora in horas for dia in dias for fiscalizador in fiscalizadores.keys() 
-#                 for comuna1 in comunas_santiago.keys()), name="comunas_vetadas")
 
 # 24) La suma de fiscalizaciones y llamadas debe alcanzar, al menos, el umbral de calidad
 model.addConstrs((quicksum(quicksum(R_htdf[hogar, hora, dia, fiscalizador]*calf + 
@@ -329,8 +339,10 @@ model.setObjective(obj, GRB.MINIMIZE)
 
 
 #### CORRER MODELO ####
-
+model.Params.MIPGap = 0.2    # 5%
+model.Params.TimeLimit = 420  # 7 minutes
 model.optimize()
+
 
 #### MOSTRAR LOS RESULTADOS ####
 string_resultado = f"resultados_{4}.sol"
