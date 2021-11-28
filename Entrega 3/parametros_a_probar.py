@@ -1,0 +1,3 @@
+MAX_TIEMPO = 10 # minutos
+GAP_PERMITIDO = 0.05
+

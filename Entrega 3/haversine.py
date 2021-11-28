@@ -45,7 +45,7 @@ for i in range(0, len(lista_coordenadas)):
             lista_coordenadas[i][1], lista_coordenadas[i][2], lista_coordenadas[a][1],
             lista_coordenadas[a][2])
 
-
+# precio original 78.767 pesos por km
 pesos_por_km = 78.767
 dict_costos_por_desp = {}
 for key in dict_distancias.keys():

@@ -21,7 +21,7 @@ dataframe.to_csv(ruta_fisc_csv)
 # un nombre (con faker) y una comuna al azar (con random). 
 ruta_fisc_json = os.path.join("Json", "fiscalizadores.json")
 dict_fiscalizadores = {}
-for i in range(0, 5):
+for i in range(0, 50):
     nombre_fisc = fake.name()
     comuna_fisc = random.randint(1,32)
     dict_individual = {"nombre": nombre_fisc, "comuna": comuna_fisc}
@@ -45,7 +45,7 @@ dataframe.to_csv(ruta_operator_csv)
 # un nombre (con faker). 
 ruta_oper_json = os.path.join("Json", "operadores.json")
 dict_operadores = {}
-for a in range(0, 2):
+for a in range(0, 25):
     nombre_opera = fake.name()
     dict_individual = {"nombre": nombre_opera}
     dict_operadores[int(a)] = dict_individual
