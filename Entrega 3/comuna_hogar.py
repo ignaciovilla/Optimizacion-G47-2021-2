@@ -40,7 +40,7 @@ with open(ruta_hogares_json, "w") as outfile:
     json.dump(dict_hogares, outfile)
 
 dict_hogares = {}
-for i in range(0, 20):
+for i in range(0, 125):
     comuna_hogar = int(random.randint(1,32))
     dict_individual = {"comuna": comuna_hogar}
     dict_hogares[int(i)] = dict_individual

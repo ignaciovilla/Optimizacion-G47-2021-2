@@ -1,9 +1,6 @@
 from gurobipy import GRB, Model, quicksum
 import os
 import json
-
-from contador import contador as test_counter
-
 ##### Comentarios Generales ####
 # Omitimos los tildes y ñ, para evitar posibles errores. Por el mismo motivo, algunas cosas 
 # están escritas en inglés
@@ -339,19 +336,13 @@ model.setObjective(obj, GRB.MINIMIZE)
 
 
 #### CORRER MODELO ####
-model.Params.MIPGap = 0.2    # 5%
-model.Params.TimeLimit = 420  # 7 minutes
+model.Params.MIPGap = 0.05    # 5%
+model.Params.TimeLimit = 300  # 10 minutes
 model.optimize()
 
 
 #### MOSTRAR LOS RESULTADOS ####
-string_resultado = f"resultados_{4}.sol"
-next(test_counter)
+string_resultado = f"resultados_bencina{0}.sol"
 ruta_resultados = os.path.join("Resultados", string_resultado)
 model.write(ruta_resultados)
 
-contador = 0
-for viaje in V_tdfky:
-    if viaje == 1:
-        contador += 1
-print(contador)
